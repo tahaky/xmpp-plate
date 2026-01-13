@@ -13,7 +13,7 @@ import java.util.Base64;
 
 /**
  * Utility class for encrypting and decrypting sensitive data
- * Uses AES-256 encryption
+ * Uses AES-128 encryption (key is derived from SHA-256 hash but truncated to 128 bits)
  */
 @Component
 @Slf4j

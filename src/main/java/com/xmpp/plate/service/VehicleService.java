@@ -92,11 +92,13 @@ public class VehicleService {
         // Disconnect XMPP connection
         connectionManager.removeConnection(plateNumber);
 
-        // Delete XMPP user
+        // Delete XMPP user - Note: May require Openfire REST API for proper deletion
         try {
             xmppUserService.deleteXmppUser(mapping.getXmppUsername());
         } catch (Exception e) {
-            log.warn("Failed to delete XMPP user, continuing with database deletion", e);
+            log.error("Failed to delete XMPP user for plate {}: {}. Manual cleanup may be required.", 
+                plateNumber, e.getMessage());
+            // Consider: Implement a cleanup queue or alert system for failed deletions
         }
 
         // Delete from database

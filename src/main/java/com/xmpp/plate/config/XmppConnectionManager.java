@@ -58,6 +58,8 @@ public class XmppConnectionManager {
                 .setXmppDomain(JidCreate.domainBareFrom(xmppProperties.getDomain()))
                 .setHost(xmppProperties.getHost())
                 .setPort(xmppProperties.getPort())
+                // SECURITY NOTE: For production, use SecurityMode.required for TLS encryption
+                // Current setting (disabled) is only for development/testing
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
                 .setCompressionEnabled(true)
                 .setSendPresence(true)

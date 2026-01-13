@@ -63,48 +63,27 @@ public class XmppUserService {
 
     /**
      * Deletes an XMPP user account
+     * Note: This implementation has limitations. For production use with Openfire,
+     * consider using the Openfire REST API plugin for proper user management.
      */
     public void deleteXmppUser(String username) {
-        XMPPTCPConnection adminConnection = null;
-        try {
-            log.info("Deleting XMPP user: {}", username);
-            
-            // Get admin connection
-            adminConnection = connectionManager.getAdminConnection();
-            
-            // Get account manager
-            AccountManager accountManager = AccountManager.getInstance(adminConnection);
-            accountManager.sensitiveOperationOverInsecureConnection(true);
-            
-            // Delete account
-            accountManager.deleteAccount();
-            
-            log.info("XMPP user deleted successfully: {}", username);
-            
-        } catch (Exception e) {
-            log.error("Failed to delete XMPP user: {}", username, e);
-            throw new XmppOperationException("Failed to delete XMPP user: " + username, e);
-        } finally {
-            if (adminConnection != null && adminConnection.isConnected()) {
-                adminConnection.disconnect();
-            }
-        }
+        // Note: The Smack AccountManager.deleteAccount() only deletes the currently
+        // authenticated user. For proper implementation with Openfire, use the REST API
+        log.warn("XMPP user deletion for '{}' - consider using Openfire REST API for production", username);
+        
+        // TODO: Implement proper user deletion via Openfire REST API
+        // Example: DELETE http://openfire-server:9090/plugins/restapi/v1/users/{username}
     }
 
     /**
      * Checks if XMPP user exists
+     * Note: This is a placeholder implementation. For production use,
+     * query the Openfire REST API to check if a specific user exists.
      */
     public boolean userExists(String username) {
-        try {
-            // Try to get connection - if successful, user exists
-            XMPPTCPConnection connection = connectionManager.getAdminConnection();
-            if (connection != null && connection.isConnected()) {
-                connection.disconnect();
-                return true;
-            }
-        } catch (Exception e) {
-            log.debug("User does not exist: {}", username);
-        }
+        // TODO: Implement proper user existence check via Openfire REST API
+        // Example: GET http://openfire-server:9090/plugins/restapi/v1/users/{username}
+        log.debug("User existence check for '{}' - implement REST API call for production", username);
         return false;
     }
 }

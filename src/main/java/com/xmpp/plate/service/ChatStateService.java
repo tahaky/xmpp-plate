@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -211,5 +212,35 @@ public class ChatStateService {
             case "GONE" -> org.jivesoftware.smackx.chatstates.ChatState.gone;
             default -> null;
         };
+    }
+
+    /**
+     * Cleanup method called on application shutdown
+     * Cancels all pending tasks and shuts down the scheduler
+     */
+    @PreDestroy
+    public void cleanup() {
+        log.info("Shutting down ChatStateService scheduler");
+        
+        // Cancel all pending tasks
+        pendingTasks.values().forEach(task -> {
+            if (!task.isDone()) {
+                task.cancel(false);
+            }
+        });
+        pendingTasks.clear();
+        
+        // Shutdown scheduler
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        
+        log.info("ChatStateService scheduler shut down successfully");
     }
 }
