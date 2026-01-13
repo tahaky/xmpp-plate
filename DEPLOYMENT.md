@@ -161,7 +161,11 @@ GRANT ALL PRIVILEGES ON DATABASE xmpp_plate TO xmpp_user;
 - Run setup wizard
 - Configure database connection
 - Create admin account
-- Enable REST API plugin (optional, but recommended)
+- **CRITICAL**: Enable in-band registration:
+  * Navigate to Server → Server Settings → Registration & Login
+  * Check "Enable in-band account registration"
+  * Save settings
+- Enable REST API plugin (optional, but recommended for production)
 
 3. **Deploy Application**:
 ```bash
