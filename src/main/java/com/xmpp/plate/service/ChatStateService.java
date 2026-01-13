@@ -128,20 +128,32 @@ public class ChatStateService {
                 password
             );
 
-            // Get chat state manager
-            ChatStateManager chatStateManager = ChatStateManager.getInstance(connection);
-
             // Create recipient JID
             EntityBareJid recipientJid = JidCreate.entityBareFrom(
                 request.getChatWithPlate() + "@" + xmppDomain
             );
 
-            // Send chat state
+            // Get chat state manager
+            ChatStateManager chatStateManager = ChatStateManager.getInstance(connection);
+
+            // Map and send chat state
             org.jivesoftware.smackx.chatstates.ChatState xmppState = 
                 mapToXmppChatState(request.getState());
 
             if (xmppState != null) {
-                chatStateManager.setCurrentState(xmppState, recipientJid);
+                // Create a message with chat state
+                org.jivesoftware.smack.packet.Message message = 
+                    connection.getStanzaFactory()
+                        .buildMessageStanza()
+                        .to(recipientJid)
+                        .build();
+                
+                // Set chat state on the message
+                message.addExtension(new org.jivesoftware.smackx.chatstates.packet.ChatStateExtension(xmppState));
+                
+                // Send the message with chat state
+                connection.sendStanza(message);
+                
                 log.debug("Sent XMPP chat state {} from {} to {}", 
                     request.getState(), request.getPlateNumber(), request.getChatWithPlate());
             }

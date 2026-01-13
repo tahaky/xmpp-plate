@@ -24,5 +24,6 @@ public class MessageRequest {
     @NotBlank(message = "Message content is required")
     private String messageContent;
 
+    @Builder.Default
     private String messageType = "TEXT";
 }
