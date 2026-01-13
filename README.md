@@ -67,12 +67,20 @@ cd xmpp-plate
 docker-compose up -d postgres openfire
 ```
 
-Wait for Openfire to start (about 30 seconds), then access the admin console:
-- URL: http://localhost:9090
-- Username: `admin`
-- Password: `admin`
+### 3. Configure Openfire
 
-### 3. Run the Application
+**Important**: Wait for Openfire to fully start (about 30-60 seconds), then:
+
+1. Access the admin console: http://localhost:9090
+2. Login with credentials:
+   - Username: `admin`
+   - Password: `admin`
+3. **Enable in-band registration** (required for vehicle registration):
+   - Navigate to: **Server** → **Server Settings** → **Registration & Login**
+   - Check: **"Enable in-band account registration"**
+   - Click: **Save Settings**
+
+### 4. Run the Application
 
 #### Option A: Using Maven
 ```bash
@@ -283,18 +291,44 @@ docker build -t xmpp-plate:latest .
 
 ## Troubleshooting
 
+### XMPP Authentication Error (SASLError: not-authorized)
+
+This error occurs when XMPP user accounts cannot be created or authenticated. **Solution**:
+
+1. **Enable In-Band Registration in Openfire**:
+   - Access Openfire admin console: http://localhost:9090
+   - Login with credentials (default: `admin`/`admin`)
+   - Navigate to: **Server** → **Server Settings** → **Registration & Login**
+   - Check the box: **"Enable in-band account registration"**
+   - Click **Save Settings**
+
+2. **Verify Openfire is fully started** (takes 30-60 seconds):
+   ```bash
+   docker logs xmpp-plate-openfire
+   ```
+   Wait for "Openfire started" message before registering vehicles.
+
+3. **Clear existing data and retry**:
+   ```bash
+   docker-compose down -v
+   docker-compose up -d
+   ```
+
 ### Openfire Connection Issues
 - Ensure Openfire is running: `docker ps | grep openfire`
 - Check Openfire admin console: http://localhost:9090
 - Verify XMPP domain matches configuration
+- Confirm in-band registration is enabled (see above)
 
 ### Database Connection Issues
 - Check PostgreSQL is running: `docker ps | grep postgres`
 - Verify database credentials in `application.properties`
+- Ensure username is `postgres` (not `posrgres` or similar typos)
 
 ### Message Not Received
 - Ensure both vehicles are registered
 - Check XMPP connections are active
+- Verify XMPP user accounts exist in Openfire admin console (Users/Groups → Users)
 - Review application logs for errors
 
 ## Contributing

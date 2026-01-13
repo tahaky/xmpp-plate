@@ -4,19 +4,25 @@ This document provides examples of how to use the XMPP Vehicle Messaging Platfor
 
 ## Setup
 
-First, make sure the infrastructure is running:
+First, make sure the infrastructure is running and properly configured:
 
 ```bash
 # Start PostgreSQL and Openfire
 docker-compose up -d postgres openfire
 
-# Wait for Openfire to start (about 30 seconds)
-# Access Openfire admin console at http://localhost:9090
-# Default credentials: admin/admin
+# Wait for Openfire to fully start (about 30-60 seconds)
+# Then configure Openfire:
+# 1. Access admin console at http://localhost:9090
+# 2. Login with: admin/admin
+# 3. Enable in-band registration:
+#    Server > Server Settings > Registration & Login
+#    Check "Enable in-band account registration" > Save Settings
 
 # Run the application
 mvn spring-boot:run
 ```
+
+**Important**: In-band registration must be enabled in Openfire for vehicle registration to work. Without it, you'll get `SASLError: not-authorized` when trying to send messages.
 
 ## API Examples
 

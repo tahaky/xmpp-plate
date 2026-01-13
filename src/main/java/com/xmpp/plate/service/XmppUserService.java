@@ -41,9 +41,11 @@ public class XmppUserService {
             
             // Check if account registration is supported
             if (!accountManager.supportsAccountCreation()) {
-                log.warn("Account creation not supported by XMPP server, attempting alternate method");
-                // Note: Some XMPP servers require admin API calls
-                // For Openfire, you might need to use the REST API instead
+                String errorMsg = "XMPP server does not support in-band registration. " +
+                        "Please enable in-band registration in Openfire admin console " +
+                        "(Server > Server Settings > Registration & Login) or use Openfire REST API plugin.";
+                log.error(errorMsg);
+                throw new XmppOperationException(errorMsg);
             }
             
             // Create account
@@ -51,9 +53,12 @@ public class XmppUserService {
             
             log.info("XMPP user created successfully: {}", username);
             
+        } catch (XmppOperationException e) {
+            // Re-throw our custom exception
+            throw e;
         } catch (Exception e) {
             log.error("Failed to create XMPP user: {}", username, e);
-            throw new XmppOperationException("Failed to create XMPP user: " + username, e);
+            throw new XmppOperationException("Failed to create XMPP user: " + username + ". Error: " + e.getMessage(), e);
         } finally {
             if (adminConnection != null && adminConnection.isConnected()) {
                 adminConnection.disconnect();
