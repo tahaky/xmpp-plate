@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: xmpp-plate-postgres
+    environment:
+      POSTGRES_DB: xmpp_plate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - xmpp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Openfire XMPP Server
+  openfire:
+    image: nasqueron/openfire:latest
+    container_name: xmpp-plate-openfire
+    environment:
+      - OPENFIRE_ADMIN_USER=admin
+      - OPENFIRE_ADMIN_PASSWORD=admin
+    ports:
+      - "9090:9090"   # Admin console
+      - "5222:5222"   # Client connections
+      - "5269:5269"   # Server connections
+      - "7070:7070"   # HTTP binding
+      - "7443:7443"   # HTTPS binding
+    volumes:
+      - openfire_data:/var/lib/openfire
+    networks:
+      - xmpp-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Spring Boot Application (optional - can be run separately)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xmpp-plate-app
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/xmpp_plate
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - XMPP_HOST=openfire
+      - XMPP_PORT=5222
+      - XMPP_DOMAIN=localhost
+      - XMPP_ADMIN_USERNAME=admin
+      - XMPP_ADMIN_PASSWORD=admin
+    ports:
+      - "8080:8080"
+    networks:
+      - xmpp-network
+    depends_on:
+      - postgres
+      - openfire
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  openfire_data:
+
+networks:
+  xmpp-network:
+    driver: bridge
